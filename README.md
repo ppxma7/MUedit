@@ -30,10 +30,10 @@ The Matlab version of MUedit is mainly maintained by Paul Kaufmann ([@pauk98](ht
 
 For technical assistance and support, please contact:
 
-Simon Avrillon  
-Research fellow, Nantes University  
-E-mail: simon.avrillon@univ-nantes.fr
-
 Paul Kaufmann  
 PhD student, University Côte d'Azur  
 E-mail: paul.kaufmann@etu.univ-cotedazur.fr
+
+Simon Avrillon  
+Research fellow, Nantes University  
+E-mail: simon.avrillon@univ-nantes.fr
