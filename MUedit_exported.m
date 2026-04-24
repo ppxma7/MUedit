@@ -62,6 +62,8 @@ classdef MUedit_exported < matlab.apps.AppBase
         SelectfileButton_2             matlab.ui.control.Button
         EditField_saving_2             matlab.ui.control.EditField
         Panel_3                        matlab.ui.container.Panel
+        PeeloffSwitch                  matlab.ui.control.Switch
+        PeeloffSwitchLabel             matlab.ui.control.Label
         LockspikesButton               matlab.ui.control.Button
         UndoButton                     matlab.ui.control.Button
         EditField_2                    matlab.ui.control.EditField
@@ -653,6 +655,7 @@ classdef MUedit_exported < matlab.apps.AppBase
             app.Backup.Pulsetrain = app.MUedition.edition.Pulsetrain{str2double(C{2})}(str2double(C{4}), :);
             app.Backup.Dischargetimes = app.MUedition.edition.Dischargetimes{str2double(C{2}),str2double(C{4})};
             app.Backup.lock = 0;
+            app.Backup.peeloff = 0;
         end
 
         % Value changed function: MUdisplayedDropDown
@@ -1101,20 +1104,22 @@ classdef MUedit_exported < matlab.apps.AppBase
             eSIG = extend(EMG,exFactor1);
             [E, D] = pcaesig(eSIG);
             [wSIG, ~, ~] = whiteesig(eSIG, E, D);
-
+            
             % Peeloff: subtract contributions of other MUs on the same grid
-            grid_id = str2double(C{2});
-            mu_current = str2double(C{4});
-            peeloffwin = 0.025;
-            edge_len = round(0.1 * app.MUedition.signal.fsamp);
-            for mu = 1:size(app.MUedition.edition.Dischargetimes, 2)
-                if mu == mu_current, continue; end
-                mu_dt = app.MUedition.edition.Dischargetimes{grid_id, mu};
-                if isempty(mu_dt) || all(ismember([1 app.MUedition.signal.fsamp], mu_dt)), continue; end
-                mu_spikes = intersect(idx, mu_dt) - idx(1) + 1;
-                mu_spikes = mu_spikes(mu_spikes > edge_len & mu_spikes <= length(idx) - edge_len);
-                if isempty(mu_spikes), continue; end
-                wSIG = peeloff(wSIG, mu_spikes, app.MUedition.signal.fsamp, peeloffwin);
+            if app.Backup.peeloff == 1
+                grid_id = str2double(C{2});
+                mu_current = str2double(C{4});
+                peeloffwin = 0.025;
+                edge_len = round(0.1 * app.MUedition.signal.fsamp);
+                for mu = 1:size(app.MUedition.edition.Dischargetimes, 2)
+                    if mu == mu_current, continue; end
+                    mu_dt = app.MUedition.edition.Dischargetimes{grid_id, mu};
+                    if isempty(mu_dt) || all(ismember([1 app.MUedition.signal.fsamp], mu_dt)), continue; end
+                    mu_spikes = intersect(idx, mu_dt) - idx(1) + 1;
+                    mu_spikes = mu_spikes(mu_spikes > edge_len & mu_spikes <= length(idx) - edge_len);
+                    if isempty(mu_spikes), continue; end
+                    wSIG = peeloff(wSIG, mu_spikes, app.MUedition.signal.fsamp, peeloffwin);
+                end
             end
 
             MUFilters = sum(wSIG(:,spikes2),2);
@@ -1385,16 +1390,17 @@ classdef MUedit_exported < matlab.apps.AppBase
                 EMG = EMG(app.MUedition.signal.EMGmask{f}==0,:);
                 exFactor1 = round(nbextchan/size(EMG,1));
                 eSIG = extend(EMG,exFactor1);
-                ReSIG = eSIG*eSIG'/length(eSIG);
-                iReSIGt = pinv(ReSIG);
+                [E, D] = pcaesig(eSIG);
+                [wSIG, ~, ~] = whiteesig(eSIG, E, D);
 
                 for mu = 1:size(app.MUedition.edition.Pulsetrain{f},1)
                     ite = ite + 1;
                     waitbar(ite/itetot, fwb,['Recalculating filter for Array#' num2str(f) ' MU#' num2str(mu)])
 
                     if length(app.MUedition.edition.Dischargetimes{f,mu})>2
-                        MUFilters = sum(eSIG(:,app.MUedition.edition.Dischargetimes{f,mu}),2);
-                        Pt = (MUFilters'*iReSIGt)*eSIG; % Update the pulse train
+                        MUFilters = sum(wSIG(:,spikes2),2);
+                        MUFilters = MUFilters/norm(MUFilters);
+                        Pt = MUFilters' * wSIG; % Update the pulse train on peeloff-cleaned whitened signal
                         Pt= Pt(1:size(EMG,2));
                         Pt = Pt .* abs(Pt); % Normalized and update the pulse train
                         [~,spikes] = findpeaks(Pt,'MinPeakDistance', round(app.MUedition.signal.fsamp*0.005)); % Peak detection
@@ -1718,7 +1724,7 @@ classdef MUedit_exported < matlab.apps.AppBase
                 subplot(1,app.MUedition.signal.ngrid,i)
                 plot(app.MUedition.edition.time,firings,'|','MarkerSize', 10, 'Color', [0.9412 0.9412 0.9412])
                 hold on
-                plot(app.MUedition.edition.time,app.MUedition.signal.target/max(app.MUedition.signal.target)*max(j,1),'--','LineWidth',1,'Color',[0.85 0.33 0.10]);
+                plot(app.MUedition.edition.time,app.MUedition.signal.target/max(app.MUedition.signal.target)*j,'--','LineWidth',1,'Color',[0.85 0.33 0.10]);
                 title(['Array#' num2str(i) ' with ' num2str(j) ' MUs'], 'Color', [0.9412 0.9412 0.9412], 'FontName', 'Avenir Next')
                 xlabel('Time (s)', 'FontName', 'Avenir Next')
                 ylabel('MU#', 'FontName', 'Avenir Next')
@@ -1845,6 +1851,15 @@ classdef MUedit_exported < matlab.apps.AppBase
                     ExtendMUfilterPushed(app);
             end
 
+        end
+
+        % Value changed function: PeeloffSwitch
+        function PeeloffSwitchValueChanged(app, event)
+            if contains(app.PeeloffSwitch.Value, 'On')
+                app.Backup.peeloff = 1;
+            else
+                app.Backup.peeloff = 0;
+            end
         end
     end
 
@@ -2028,7 +2043,7 @@ classdef MUedit_exported < matlab.apps.AppBase
             app.UpdateMUfilterButton.FontName = 'Poppins';
             app.UpdateMUfilterButton.FontSize = 18;
             app.UpdateMUfilterButton.FontColor = [0.9412 0.9412 0.9412];
-            app.UpdateMUfilterButton.Position = [653 437 215 45];
+            app.UpdateMUfilterButton.Position = [653 437 168 45];
             app.UpdateMUfilterButton.Text = 'Update MU filter';
 
             % Create ExtendMUfilter
@@ -2038,7 +2053,7 @@ classdef MUedit_exported < matlab.apps.AppBase
             app.ExtendMUfilter.FontName = 'Poppins';
             app.ExtendMUfilter.FontSize = 18;
             app.ExtendMUfilter.FontColor = [0.9412 0.9412 0.9412];
-            app.ExtendMUfilter.Position = [880 437 215 45];
+            app.ExtendMUfilter.Position = [944 437 151 45];
             app.ExtendMUfilter.Text = 'Extend MU filter';
 
             % Create EditField_2
@@ -2068,6 +2083,21 @@ classdef MUedit_exported < matlab.apps.AppBase
             app.LockspikesButton.FontColor = [0.9412 0.9412 0.9412];
             app.LockspikesButton.Position = [491 438 150 45];
             app.LockspikesButton.Text = 'Lock spikes';
+
+            % Create PeeloffSwitchLabel
+            app.PeeloffSwitchLabel = uilabel(app.Panel_3);
+            app.PeeloffSwitchLabel.HorizontalAlignment = 'center';
+            app.PeeloffSwitchLabel.FontName = 'Poppins';
+            app.PeeloffSwitchLabel.FontColor = [1 1 1];
+            app.PeeloffSwitchLabel.Position = [862 435 45 22];
+            app.PeeloffSwitchLabel.Text = 'Peeloff';
+
+            % Create PeeloffSwitch
+            app.PeeloffSwitch = uiswitch(app.Panel_3, 'slider');
+            app.PeeloffSwitch.ValueChangedFcn = createCallbackFcn(app, @PeeloffSwitchValueChanged, true);
+            app.PeeloffSwitch.FontName = 'Poppins';
+            app.PeeloffSwitch.FontColor = [1 1 1];
+            app.PeeloffSwitch.Position = [860 460 45 20];
 
             % Create Panel_4
             app.Panel_4 = uipanel(app.UIFigure);
