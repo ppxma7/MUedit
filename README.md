@@ -12,7 +12,7 @@ You can download the data presented in the paper at https://figshare.com/project
 
 ## Status
 
-A new version of MUedit is available at https://github.com/simonavrillon/MUedit2. While the Matlab version will still be maintained, future features will be prioritarily implemented in this new Python/JavaScript version.
+A new version of MUedit is available at https://github.com/simonavrillon/MUedit2. While the Matlab version will still be maintained, future features will be prioritarily implemented in this new Python/JavaScript version. We welcome any contributions to make the Matlab version of MUedit useful for the wider community.
 
 ## Related versions
 
@@ -26,8 +26,14 @@ If you use MUedit in your experimental setting, please cite the following paper:
 
 ## Support
 
+The Matlab version of MUedit is mainly maintained by Paul Kaufmann ([@pauk98](https://github.com/pauk98)) and Simon Avrillon.
+
 For technical assistance and support, please contact:
 
 Simon Avrillon  
 Research fellow, Nantes University  
 E-mail: simon.avrillon@univ-nantes.fr
+
+Paul Kaufmann  
+PhD student, University Côte d'Azur  
+E-mail: paul.kaufmann@etu.univ-cotedazur.fr
