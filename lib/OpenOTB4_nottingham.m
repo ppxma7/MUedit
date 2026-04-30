@@ -12,7 +12,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [dlgbox, signal] = OpenOTB4(path, file, dialog)
+function [dlgbox, signal] = OpenOTB4_nottingham(path, file, dialog)
 
 % Make new folder
 mkdir('tmpopen');  
@@ -176,23 +176,37 @@ for n = forceTrackIdx
     forceData = [forceData; raw_sip];
 end
 
+% if ~isempty(forceData)
+%     if isfield(signal, 'auxiliary')
+%         signal.auxiliary = [signal.auxiliary; forceData];
+%     else
+%         signal.auxiliary = forceData;
+%     end
+%     forceNames = {'acquired data', 'performed path', 'requested path'};
+%     for n = 1:size(forceData,1)
+%         signal.auxiliaryname{end+1} = forceNames{n};
+%     end
+%     signal.target = forceData(1,:);
+% end
+
 if ~isempty(forceData)
     if isfield(signal, 'auxiliary')
         signal.auxiliary = [signal.auxiliary; forceData];
     else
         signal.auxiliary = forceData;
     end
-    forceNames = {'acquired data', 'performed path', 'requested path'};
-    for n = 1:size(forceData,1)
-        signal.auxiliaryname{end+1} = forceNames{n};
+    % Use titles directly from XML - works for any number of force tracks
+    forceTrackIdx = find(isForce);
+    for n = 1:length(forceTrackIdx)
+        signal.auxiliaryname{end+1} = Title{forceTrackIdx(n)};
     end
     signal.target = forceData(1,:);
 end
 
 signal.data = data(emgRows, :);
-if ~isempty(auxRows)
-    signal.auxiliary = data(auxRows, :);
-end
+% if ~isempty(auxRows)
+%     signal.auxiliary = data(auxRows, :);
+% end
 
 % Sampling rate from first EMG track; fall back to track 1
 emgTrack = find(isEMG, 1);
@@ -205,16 +219,16 @@ end
 signal.nChan = size(signal.data, 1);
 signal.ngrid = length(signal.gridname);
 
-if isfield(signal, 'auxiliary')
-    for i = 1:signal.ngrid*4
-        signal.auxiliaryname{i} = 'Quaternions';
-    end
-    auxn=1;
-    for j = i+1:size(signal.auxiliary,1)
-        signal.auxiliaryname{j} = ['AUX' num2str(auxn)];
-        auxn = auxn + 1;
-    end
-end
+% if isfield(signal, 'auxiliary')
+%     for i = 1:signal.ngrid*4
+%         signal.auxiliaryname{i} = 'Quaternions';
+%     end
+%     auxn=1;
+%     for j = i+1:size(signal.auxiliary,1)
+%         signal.auxiliaryname{j} = ['AUX' num2str(auxn)];
+%         auxn = auxn + 1;
+%     end
+% end
 
 dlgbox = [];
 % Clean Folder
