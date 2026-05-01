@@ -166,13 +166,22 @@ else
     end
 end
 
-% After the main data loading block, add:
+% After the main data loading block check force
+signal.data = data(emgRows, :);
+nSamplesEMG = size(signal.data, 2); % fix to trim path in case
+
 forceData = [];
 forceTrackIdx = find(isForce);
 for n = forceTrackIdx
     h = fopen(fullfile('tmpopen', Path{n}), 'r');
     raw_sip = fread(h, [1, Inf], 'float64');
     fclose(h);
+    % hot fix to trim
+    if length(raw_sip) > nSamplesEMG
+        raw_sip = raw_sip(1:nSamplesEMG);
+    elseif length(raw_sip) < nSamplesEMG
+        raw_sip(end+1:nSamplesEMG) = raw_sip(end);
+    end
     forceData = [forceData; raw_sip];
 end
 
@@ -203,7 +212,7 @@ if ~isempty(forceData)
     signal.target = forceData(1,:);
 end
 
-signal.data = data(emgRows, :);
+% signal.data = data(emgRows, :);
 % if ~isempty(auxRows)
 %     signal.auxiliary = data(auxRows, :);
 % end
