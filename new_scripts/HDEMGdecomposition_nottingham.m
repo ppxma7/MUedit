@@ -42,14 +42,15 @@ close all;
 clc;
 %% Input parameters
 parameters.pathname = 'C:\Users\masgh\data\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
-parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
+%parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
+parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat';
 
 % DECOMPOSITION PARAMETERS
 parameters.NITER = 10;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
 parameters.ref_idx = 1; % 1, 4, or 7 for multichannel files (typically)
-parameters.checkEMG = 1; % 0 = Consider all the channels ; 1 = Visual checking
+parameters.checkEMG = 0; % 0 = Consider all the channels ; 1 = Visual checking
 parameters.nwindows = 1; % number of segmented windows over each contraction
 parameters.differentialmode = 0; % 0 = no; 1 = yes (filter out the smallest MU, can improve decomposition at the highest intensities
 parameters.initialization = 1; % 0 = max EMG; 1 = random weights
