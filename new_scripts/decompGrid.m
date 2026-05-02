@@ -62,7 +62,7 @@ for nwin = 1:length(signalprocess.coordinatesplateau)/2
     
     % Step 3: FastICA method
     if parallel
-        disp(['Grid ', num2str(grid_nr), ' window ', num2str(nwin), ' starting decompensition'])
+        disp(['Grid ', num2str(grid_nr), ' window ', num2str(nwin), ' starting decomposition'])
     else
         waitbar(0.8, f, ['Grid #' num2str(grid_nr) ' - Decomposition - Decomposing the HDsEMG data'])
     end%if

@@ -22,7 +22,9 @@ covarianceMatrix = cov(signal', 1);
 
 % Sort the eigenvalues - decending.
 eigenvalues = sort(diag(D),'descend');
-rankTolerance = mean(eigenvalues((length(eigenvalues)/2):end));
+%rankTolerance = mean(eigenvalues((length(eigenvalues)/2):end));
+% make sure its integer
+rankTolerance = mean(eigenvalues(round(length(eigenvalues)/2):end));
 if rankTolerance < 0
     rankTolerance = 0;
 end
