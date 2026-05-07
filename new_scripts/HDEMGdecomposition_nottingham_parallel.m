@@ -47,7 +47,7 @@ parameters.pathname = 'C:\Users\masgh\data\'; % add a '/' at the end for Mac OS,
 
 
 %multfiles = {{'rec_5_7_forDecomp.mat'; 2},{'rec_6_8_forDecomp.mat'; 2}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
-multfiles = {{'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; 1}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
+multfiles = {{'CANAPI_11AP_TA_BI_TRAP_10_REALIGNED.otb4'; 1}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
 nr_fil      = numel(multfiles);
 
 run_parallel        = true; % true
@@ -57,7 +57,7 @@ if run_parallel
 end
 
 % DECOMPOSITION PARAMETERS
-parameters.NITER = 10;
+parameters.NITER = 150;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
 parameters.ref_idx = 1; % 1, 4, or 7 for multichannel files (typically)
