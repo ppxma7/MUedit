@@ -119,6 +119,13 @@ elseif parameters.ref_exist == 2
         signalprocess.ref_signal = signal.auxiliary(idx,:);
         signalprocess.ref_signal = (signalprocess.ref_signal - signalprocess.ref_signal(1)) / ...
             max(signalprocess.ref_signal - signalprocess.ref_signal(1));
+        if doFilt
+            [b_bp, a_bp] = butter(5,20/(fsval/2),'low');
+            tempRef = signalprocess.ref_signal;
+            cleanRef = filtfilt(b_bp,a_bp,tempRef);
+            signalprocess.ref_signal = cleanRef;
+
+        end
         signal.target = signalprocess.ref_signal;
         signal.path = signalprocess.ref_signal;
     end
