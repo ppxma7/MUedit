@@ -41,16 +41,20 @@ clear
 close all;
 clc;
 %% Input parameters
-parameters.pathname = 'C:\Users\masgh\data\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\JR\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
 %parameters.filename = 'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4';
 
 
 %multfiles = {{'rec_5_7_forDecomp.mat'; 2},{'rec_6_8_forDecomp.mat'; 2}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
-multfiles = {{'CANAPI_11AP_TA_BI_TRAP_10_REALIGNED.otb4'; 1}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
+multfiles = {
+    {'MMtrial_06032026_vm50prc.mat'},...
+    }; 
+    % each cell contains the filename (matlab or otb) and nr of windows for this file
+
 nr_fil      = numel(multfiles);
 
-run_parallel        = true; % true
+run_parallel        = false; % true
 
 if run_parallel
     desiredNumWorkers   = 2;  % or whatever number you want
@@ -62,7 +66,7 @@ parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist 
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
 parameters.ref_idx = 1; % 1, 4, or 7 for multichannel files (typically)
 parameters.checkEMG = 1; % 0 = Consider all the channels ; 1 = Visual checking
-%parameters.nwindows = 1; % number of segmented windows over each contraction
+parameters.nwindows = 1; % number of segmented windows over each contraction
 parameters.differentialmode = 0; % 0 = no; 1 = yes (filter out the smallest MU, can improve decomposition at the highest intensities
 parameters.initialization = 1; % 0 = max EMG; 1 = random weights
 parameters.peeloff = 0; % 0 = no; 1 = yes (update the residual EMG by removing the motor units with the highest SIL value)
@@ -88,7 +92,7 @@ alldata = cell(nr_fil,1);
 for fil = 1:nr_fil
 
     parameters.filename = multfiles{fil}{1};
-    parameters.nwindows = multfiles{fil}{2};
+    %parameters.nwindows = multfiles{fil}{2};
 
     f = waitbar(0,'Preprocessing - Load the HDsEMG data');
 
@@ -138,11 +142,17 @@ for fil = 1:nr_fil
             'ref_idx (%d) exceeds number of auxiliary signals (%d)', ...
             parameters.ref_idx, length(signal.auxiliaryname));
         idx = parameters.ref_idx;
-        signalprocess.ref_signal = signal.auxiliary(idx,:);
-        signalprocess.ref_signal = (signalprocess.ref_signal - signalprocess.ref_signal(1)) / ...
-            max(signalprocess.ref_signal - signalprocess.ref_signal(1));
-        signal.target = signalprocess.ref_signal;
-        signal.path = signalprocess.ref_signal;
+        if isfield(signal,'path')
+            signalprocess.ref_signal = signal.path;
+            signal.target = signalprocess.ref_signal;
+
+        else
+            signalprocess.ref_signal = signal.auxiliary(idx,:);
+            signalprocess.ref_signal = (signalprocess.ref_signal - signalprocess.ref_signal(1)) / ...
+                max(signalprocess.ref_signal - signalprocess.ref_signal(1));
+            signal.target = signalprocess.ref_signal;
+            signal.path = signalprocess.ref_signal;
+        end
 
         figure;
         plot(signalprocess.ref_signal, 'Color', [0.5 0.5 0.5], 'LineWidth', 2)
@@ -212,7 +222,7 @@ keepvariables{end+1} = 'keepvariables';
 for fil = 1:nr_fil
     clearvars('-except', keepvariables{:});
     parameters.filename = multfiles{fil}{1};
-    parameters.nwindows = multfiles{fil}{2};
+    %parameters.nwindows = multfiles{fil}{2};
     signal              = alldata{fil}.signal;
     signalprocess       = alldata{fil}.signalprocess;
     alldata{fil} = [];

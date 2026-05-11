@@ -41,9 +41,9 @@ clear
 close all;
 clc;
 %% Input parameters
-parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\JR\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
-parameters.filename = 'Injectables_00J_VLVM_RAMP_30_2INJECTIONS_100DEGREES_TRIAL2.otb+';
+parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat';
 
 % DECOMPOSITION PARAMETERS
 parameters.NITER = 150;

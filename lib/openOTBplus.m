@@ -152,18 +152,29 @@ end
 % get the target and the path performed by the participant
 target = dir(fullfile('tmpopen','*.sip'));
 
+n = size(data,2);
+tmp = zeros(1,n);
+tmp2 = zeros(1,n);
+
+
 if ~isempty(target)
     h=fopen(fullfile('tmpopen',target(2).name),'r');
     data1=fread(h,[1 Inf],'float64');
     fclose(h);
-    data1 = data1(1:size(data,2));
-    signal.path = data1;
+
+    tmp(1:min(length(data1),n)) = data1(1:min(length(data1),n));
+    signal.path = tmp;
+    %data1 = data1(1:size(data,2));
+    %signal.path = data1;
 
     h=fopen(fullfile('tmpopen',target(3).name),'r');
     data2=fread(h,[1 Inf],'float64');
     fclose(h);
-    data2 = data2(1:size(data,2));
-    signal.target = data2;
+    % zero padding
+    tmp2(1:min(length(data2),n)) = data2(1:min(length(data2),n));
+    signal.target = tmp2;
+    %data2 = data2(1:size(data,2));
+    %signal.target = data2;
 
     if isfield(signal, 'auxiliary')
         signal.auxiliary = [signal.auxiliary; signal.path; signal.target];
