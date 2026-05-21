@@ -41,16 +41,20 @@ clear
 close all;
 clc;
 %% Input parameters
-parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\JR\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+parameters.pathname = 'C:\Users\masgh\The University of Nottingham\Mathew Piasecki (staff)''s - ePhys Lab\MUEdit Practice\MUedit\';
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
 %parameters.filename = 'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4';
 
 
 %multfiles = {{'rec_5_7_forDecomp.mat'; 2},{'rec_6_8_forDecomp.mat'; 2}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
-multfiles = {
-    {'MMtrial_06032026_vm50prc.mat'},...
-    }; 
-    % each cell contains the filename (matlab or otb) and nr of windows for this file
+% multfiles = {
+%     {'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4'},...
+%     }; 
+%     % each cell contains the filename (matlab or otb) and nr of windows for this file
+
+files = dir(fullfile(parameters.filename, '*.mat'));
+multfiles = arrayfun(@(f) {fullfile(parameters.filename, f.name)}, files, 'UniformOutput', false);
 
 nr_fil      = numel(multfiles);
 
@@ -101,7 +105,8 @@ for fil = 1:nr_fil
     %       0a: determine the number and type of grids
     C = strsplit(parameters.filename,'.');
     if isequal(C{end}, 'mat')
-        load([parameters.pathname parameters.filename], 'signal');
+        %load([parameters.pathname parameters.filename], 'signal');
+        load([parameters.filename], 'signal');
     elseif isequal(C{end}, 'otb+')
         [~, signal] = openOTBplus(parameters.pathname, parameters.filename,0);
     elseif isequal(C{end},'otb4')
