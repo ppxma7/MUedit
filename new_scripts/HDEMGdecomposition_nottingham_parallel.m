@@ -42,19 +42,20 @@ close all;
 clc;
 %% Input parameters
 parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
-parameters.pathname = 'C:\Users\masgh\The University of Nottingham\Mathew Piasecki (staff)''s - ePhys Lab\MUEdit Practice\MUedit\';
+parameters.pathname = 'C:\Users\masgh\The University of Nottingham\Mathew Piasecki (staff) - ePhys Lab\Injectables\03JR\REALIGNED_HD\';
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
 %parameters.filename = 'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4';
 
-
-%multfiles = {{'rec_5_7_forDecomp.mat'; 2},{'rec_6_8_forDecomp.mat'; 2}}; % each cell contains the filename (matlab or otb) and nr of windows for this file
-% multfiles = {
-%     {'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4'},...
-%     }; 
-%     % each cell contains the filename (matlab or otb) and nr of windows for this file
-
-files = dir(fullfile(parameters.filename, '*.mat'));
-multfiles = arrayfun(@(f) {fullfile(parameters.filename, f.name)}, files, 'UniformOutput', false);
+grabAll = 1;
+if grabAll
+    files = dir(fullfile(parameters.filename, '*.mat'));
+    multfiles = arrayfun(@(f) {fullfile(parameters.filename, f.name)}, files, 'UniformOutput', false);
+else
+    multfiles = {
+        {'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4'},...
+        };
+        % each cell contains the filename (matlab or otb) and nr of windows for this file
+end
 
 nr_fil      = numel(multfiles);
 
@@ -68,7 +69,7 @@ end
 parameters.NITER = 150;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
-parameters.ref_idx = 1; % 1, 4, or 7 for multichannel files (typically)
+parameters.ref_idx = 13; %1; % 1, 4, or 7 for multichannel files (typically)
 parameters.checkEMG = 1; % 0 = Consider all the channels ; 1 = Visual checking
 parameters.nwindows = 1; % number of segmented windows over each contraction
 parameters.differentialmode = 0; % 0 = no; 1 = yes (filter out the smallest MU, can improve decomposition at the highest intensities
@@ -105,8 +106,11 @@ for fil = 1:nr_fil
     %       0a: determine the number and type of grids
     C = strsplit(parameters.filename,'.');
     if isequal(C{end}, 'mat')
-        %load([parameters.pathname parameters.filename], 'signal');
-        load([parameters.filename], 'signal');
+        if grabAll
+            load([parameters.filename], 'signal');
+        else
+            load([parameters.pathname parameters.filename], 'signal');
+        end
     elseif isequal(C{end}, 'otb+')
         [~, signal] = openOTBplus(parameters.pathname, parameters.filename,0);
     elseif isequal(C{end},'otb4')
@@ -281,7 +285,11 @@ for fil = 1:nr_fil
             signal.Dischargetimes(grd_nr,:) = [distimenew_grd{grd_nr}, cell(1, maxnumber-numel(distimenew_grd{grd_nr}))];
         end
 
-        savename = fullfile(parameters.pathname, [parameters.filename '_decomp.mat']);
+        if grabAll
+            savename = fullfile([parameters.filename '_decomp.mat']);
+        else
+            savename = fullfile(parameters.pathname, [parameters.filename '_decomp.mat']);
+        end
         save(savename, 'signal', 'parameters', '-v7.3');
 
 end

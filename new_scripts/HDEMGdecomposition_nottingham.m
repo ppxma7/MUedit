@@ -42,9 +42,12 @@ close all;
 clc;
 %% Input parameters
 parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+parameters.pathname = 'C:\Users\masgh\data\emgReaderData\';
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
-parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat';
+%parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat';
 
+parameters.filename = 'task_sub01_20260522_151618.mat';
+doFilt = 0;
 % DECOMPOSITION PARAMETERS
 parameters.NITER = 150;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
