@@ -41,36 +41,57 @@ clear
 close all;
 clc;
 %% Input parameters
-parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
-parameters.pathname = 'C:\Users\masgh\The University of Nottingham\Mathew Piasecki (staff) - ePhys Lab\Injectables\03JR\REALIGNED_HD\';
+%parameters.pathname = 'C:\Users\masgh\data\matchedpairs_myodata\MA\'; % add a '/' at the end for Mac OS, add a '\' at the end for Windows
+%parameters.pathname = 'C:\Users\masgh\The University of Nottingham\Mathew Piasecki (staff) - ePhys Lab\Injectables\03JR\REALIGNED_HD\';
 %parameters.filename = 'MA_190326_MMtrial_TRAP10_90DEG_2ARRAYS_3.mat'; % filename.otb+ or filename.mat
 %parameters.filename = 'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4';
 
-grabAll = 1;
+parameters.pathname = 'C:\Users\masgh\data\dataforMUEdit\';
+grabAll = 0;
 if grabAll
-    files = dir(fullfile(parameters.filename, '*.mat'));
-    multfiles = arrayfun(@(f) {fullfile(parameters.filename, f.name)}, files, 'UniformOutput', false);
+    files = dir(fullfile(parameters.pathname, '*.mat'));
+    multfiles = arrayfun(@(f) {fullfile(parameters.pathname, f.name)}, files, 'UniformOutput', false);
 else
-    multfiles = {
-        {'Injectables_002MA_VLVM_TRAP_10_TWOINJECTABLES_REALIGNED.otb4'},...
-        };
-        % each cell contains the filename (matlab or otb) and nr of windows for this file
+    multfiles = {{'CANAPI_BL08_TA_L_RAMP_50_REALIGNED.otb4'}};
+    % multfiles = {
+    %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_2_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_iEMG_needlePOS3_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_iEMG_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_POS2_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_POS3_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_POS4_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_10_POS5_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_90DEG_2arrays_2_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_90DEG_2arrays_iEMG_needlePOS2_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_90DEG_2arrays_iEMG_needlePOS3_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_90DEG_2arrays_iEMG_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_90DEG_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_POS2_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_POS3_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_POS4_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_25_POS5_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_40_90DEG_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_50_90DEG_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_70_90DEG_2arrays_REALIGNED.mat'},...
+    %     {'MYOMATRIX_03JR_R_TRAP_90_90DEG_2arrays_REALIGNED.mat'},...
+    %     };
 end
 
 nr_fil      = numel(multfiles);
 
-run_parallel        = false; % true
+run_parallel        = true; % true
 
 if run_parallel
     desiredNumWorkers   = 2;  % or whatever number you want
 end
 
 % DECOMPOSITION PARAMETERS
-parameters.NITER = 150;
+parameters.NITER = 200;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
-parameters.ref_idx = 13; %1; % 1, 4, or 7 for multichannel files (typically)
-parameters.checkEMG = 1; % 0 = Consider all the channels ; 1 = Visual checking
+parameters.ref_idx = 3; %13; %1; % 1, 4, or 7 for multichannel files (typically)
+parameters.checkEMG = 0; % 0 = Consider all the channels ; 1 = Visual checking
 parameters.nwindows = 1; % number of segmented windows over each contraction
 parameters.differentialmode = 0; % 0 = no; 1 = yes (filter out the smallest MU, can improve decomposition at the highest intensities
 parameters.initialization = 1; % 0 = max EMG; 1 = random weights
@@ -154,6 +175,11 @@ for fil = 1:nr_fil
         if isfield(signal,'path')
             signalprocess.ref_signal = signal.path;
             signal.target = signalprocess.ref_signal;
+
+        elseif isfield(signal,'target')
+            signalprocess.ref_signal = signal.target;
+            signal.target = signalprocess.ref_signal;
+            signal.path = signalprocess.ref_signal;
 
         else
             signalprocess.ref_signal = signal.auxiliary(idx,:);
