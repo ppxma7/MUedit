@@ -52,7 +52,7 @@ if grabAll
     files = dir(fullfile(parameters.pathname, '*.mat'));
     multfiles = arrayfun(@(f) {fullfile(parameters.pathname, f.name)}, files, 'UniformOutput', false);
 else
-    multfiles = {{'CANAPI_BL08_TA_L_RAMP_50_REALIGNED.otb4'}};
+    multfiles = {{'CANAPI_BL08_TA_R_RAMP_50_REALIGNED.otb4'}};
     % multfiles = {
     %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_2_REALIGNED.mat'},...
     %     {'MYOMATRIX_03JR_R_TRAP_10_90DEG_2arrays_iEMG_needlePOS3_REALIGNED.mat'},...
@@ -90,7 +90,7 @@ end
 parameters.NITER = 200;
 parameters.ref_exist = 2; % if ref_signal exist ref_exist = 1; if not ref_exist = 0 and manual selection of windows. Michael - Add in 2, for drawrectangle version
 %parameters.ref_name = 'acquired'; % MICHAEL - adding this in - actually dont need
-parameters.ref_idx = 3; %13; %1; % 1, 4, or 7 for multichannel files (typically)
+parameters.ref_idx = 1; %13; %1; % 1, 4, or 7 for multichannel files (typically)
 parameters.checkEMG = 0; % 0 = Consider all the channels ; 1 = Visual checking
 parameters.nwindows = 1; % number of segmented windows over each contraction
 parameters.differentialmode = 0; % 0 = no; 1 = yes (filter out the smallest MU, can improve decomposition at the highest intensities
@@ -113,6 +113,8 @@ parameters.peeloffwin = 0.025; % duration of the window (ms) for detecting the a
 parameters.duplicatesthresh = 0.3; % threshold that define the minimal percentage of common discharge times between duplicated motor units
 parameters.CoVDR = 0.3; % threshold that define the CoV of Discharge rate that we want to reach for cleaning the MU discharge times when refineMU is on
 
+% OTHER PARAMS
+targFlipped = 1;
 
 alldata = cell(nr_fil,1);
 for fil = 1:nr_fil
@@ -173,11 +175,24 @@ for fil = 1:nr_fil
             parameters.ref_idx, length(signal.auxiliaryname));
         idx = parameters.ref_idx;
         if isfield(signal,'path')
-            signalprocess.ref_signal = signal.path;
+            if targFlipped
+                tmp = -signal.path;
+                tmp = tmp - min(tmp);
+                signalprocess.ref_signal = tmp;
+            else
+                signalprocess.ref_signal = signal.path;
+            end
             signal.target = signalprocess.ref_signal;
 
         elseif isfield(signal,'target')
-            signalprocess.ref_signal = signal.target;
+            if targFlipped
+                tmp = -signal.target;
+                tmp = tmp - min(tmp);
+                signalprocess.ref_signal = tmp;
+            else
+                signalprocess.ref_signal = signal.target;
+            end
+            
             signal.target = signalprocess.ref_signal;
             signal.path = signalprocess.ref_signal;
 
